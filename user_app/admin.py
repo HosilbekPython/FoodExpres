@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import Kitchen, Category, SubCategory, Product, Comment, Rating, Order, UserProfile
+from .models import (Kitchen, Category, SubCategory, Product, Comment, Rating, Order,
+                     UserProfile , KitchenAdminProfile , CourierProfile , User)
 
 
 @admin.register(Kitchen)
@@ -61,3 +62,25 @@ class UserProfileAdmin(admin.ModelAdmin):
     search_fields = ["user__username", "phone_number", "address", "location"]
     list_filter = ["created_at"]
     readonly_fields = ["created_at"]
+
+
+@admin.register(KitchenAdminProfile)
+class KitchenAdminProfileAdmin(admin.ModelAdmin):
+    list_display = ["user", "phone_number", "kitchen", "created_at"]
+    search_fields = ["user__username", "phone_number", "kitchen__name"]
+    list_filter = ["created_at"]
+    readonly_fields = ["created_at"]
+
+
+@admin.register(CourierProfile)
+class CourierProfileAdmin(admin.ModelAdmin):
+    list_display = ["user", "phone_number", "passport_series", "passport_number", "created_at"]
+    search_fields = ["user__username", "phone_number", "passport_series", "passport_number"]
+    list_filter = ["created_at"]
+    readonly_fields = ["created_at"]
+
+
+
+
+
+

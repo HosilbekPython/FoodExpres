@@ -145,10 +145,41 @@ class Comment(models.Model):
         verbose_name_plural = "Comments"
 
 
+
+class KitchenAdminProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="kitchen_admin_profile")
+    phone_number = models.CharField(max_length=15, blank=True, null=True)
+    kitchen = models.OneToOneField(Kitchen, on_delete=models.CASCADE, related_name="admin_profile")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Admin Profile of {self.user.username} for {self.kitchen.name}"
+
+    class Meta:
+        verbose_name = "Kitchen Admin Profile"
+        verbose_name_plural = "Kitchen Admin Profiles"
+
+
+class CourierProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="courier_profile")
+    phone_number = models.CharField(max_length=15, blank=True, null=True)
+    photo = models.ImageField(upload_to="courier/photos/")
+    passport_series = models.CharField(max_length=9, unique=True)  # 9 ta belgi (masalan: AA1234567)
+    passport_number = models.CharField(max_length=14, unique=True)  # 14 ta raqam (masalan: 12345678901234)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Courier Profile of {self.user.username}"
+
+    class Meta:
+        verbose_name = "Courier Profile"
+        verbose_name_plural = "Courier Profiles"
+
 class Order(models.Model):
     user = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name="orders")  # User o‘rniga UserProfile
     products = models.ManyToManyField(Product, related_name="orders")
     created_at = models.DateTimeField(auto_now_add=True)
+    courier = models.ForeignKey( CourierProfile, on_delete=models.SET_NULL , null=True)
 
     def __str__(self):
         return f"Order by {self.user.user.username} at {self.created_at}"
@@ -156,3 +187,8 @@ class Order(models.Model):
     class Meta:
         verbose_name = "Order"
         verbose_name_plural = "Orders"
+
+
+
+
+

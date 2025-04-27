@@ -1,5 +1,8 @@
 from rest_framework import serializers
-from .models import Kitchen, Category, SubCategory, Product, Comment, Rating , UserProfile , Order
+from django.utils.text import slugify
+
+from .models import (Kitchen, Category, SubCategory, Product, Comment, Rating , UserProfile
+                    , Order , KitchenAdminProfile , CourierProfile , User)
 
 
 class KitchenSerializer(serializers.ModelSerializer):
@@ -16,11 +19,43 @@ class CategorySerializer(serializers.ModelSerializer):
 
 class SubCategorySerializer(serializers.ModelSerializer):
     category = CategorySerializer(read_only=True)
+    category_id = serializers.IntegerField(write_only=True)
 
     class Meta:
         model = SubCategory
-        fields = ["id", "name", "slug", "category"]
+        fields = ['id', 'name', 'slug', 'category', 'category_id', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'slug', 'category', 'created_at', 'updated_at']
 
+    def validate(self, data):
+        if not data.get('category_id'):
+            raise serializers.ValidationError("category_id is required.")
+        return data
+
+    def create(self, validated_data):
+        category_id = validated_data.pop('category_id')
+        try:
+            category = Category.objects.get(id=category_id)
+        except Category.DoesNotExist:
+            raise serializers.ValidationError(f"Category with id {category_id} does not exist.")
+
+        sub_category = SubCategory.objects.create(
+            category=category,
+            **validated_data
+        )
+        return sub_category
+
+    def update(self, instance, validated_data):
+        category_id = validated_data.pop('category_id', None)
+        if category_id:
+            try:
+                category = Category.objects.get(id=category_id)
+                instance.category = category
+            except Category.DoesNotExist:
+                raise serializers.ValidationError(f"Category with id {category_id} does not exist.")
+
+        instance.name = validated_data.get('name', instance.name)
+        instance.save()
+        return instance
 
 
 class RatingSerializer(serializers.ModelSerializer):
@@ -102,6 +137,27 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "all_orders",
         ]
 
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email']
+
+class KitchenAdminProfileSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+    kitchen = KitchenSerializer(read_only=True)
+
+    class Meta:
+        model = KitchenAdminProfile
+        fields = ['id', 'user', 'phone_number', 'kitchen', 'created_at']
+        read_only_fields = ['created_at']
+
+class CourierProfileSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+
+    class Meta:
+        model = CourierProfile
+        fields = ['id', 'user', 'phone_number', 'photo', 'passport_series', 'passport_number', 'created_at']
+        read_only_fields = ['created_at']
 
 
 

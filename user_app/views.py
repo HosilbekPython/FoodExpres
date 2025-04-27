@@ -1,15 +1,12 @@
 from rest_framework import viewsets, filters
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from rest_framework import generics
+
 from django_filters.rest_framework import DjangoFilterBackend
-from .models import Kitchen, Category, SubCategory, Product, Comment, Rating
-from .serializers import (
-    KitchenSerializer,
-    CategorySerializer,
-    SubCategorySerializer,
-    ProductSerializer,
-    CommentSerializer,
-    RatingSerializer,
-)
+from .models import Kitchen, Category, SubCategory, Product, Comment, Rating , CourierProfile , KitchenAdminProfile
+from .serializers import (KitchenSerializer,CategorySerializer,SubCategorySerializer,
+    ProductSerializer,CommentSerializer,RatingSerializer,KitchenAdminProfileSerializer,
+    CourierProfileSerializer )
 
 
 class KitchenViewSet(viewsets.ModelViewSet):
@@ -43,7 +40,7 @@ class ProductViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticatedOrReadOnly]
     filter_backends = [filters.SearchFilter, DjangoFilterBackend]
     filterset_fields = ["kitchen", "category", "subcategory"]  # brand olib tashlandi
-    search_fields = ["title", "description", "brand"]
+    search_fields = ["title", "description"]
 
 
 class CommentViewSet(viewsets.ModelViewSet):
@@ -78,3 +75,16 @@ class RatingViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+
+
+class KitchenAdminProfileViewSet(viewsets.ModelViewSet):
+    queryset = KitchenAdminProfile.objects.all()
+    serializer_class = KitchenAdminProfileSerializer
+
+class CourierProfileViewSet(viewsets.ModelViewSet):
+    queryset = CourierProfile.objects.all()
+    serializer_class = CourierProfileSerializer
+
+
+
+
